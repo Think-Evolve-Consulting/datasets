@@ -51,21 +51,49 @@ _LICENSE = ""
 # The HuggingFace Datasets library doesn't host the datasets but only points to the original files.
 # This can be an arbitrary nested dict/list of URLs (see below in `_split_generators` method)
 _URLS = {
-    "tai4species": "https://storage.googleapis.com/telangana-cameratraps/cameratraps.gz",
+    "tai4species": "https://storage.googleapis.com/telangana-cameratraps/cameratraps4.zip",
+    "tai20species": "https://storage.googleapis.com/telangana-cameratraps/cameratraps20.zip"
 }
 
-_NAMES = [
+_NAMES20 = [
+    "birds",
+    "black naped hare",
+    "chinkara",
+    "chithal",
+    "cows",
+    "dhole",
+    "domestic dogs",
+    "gaur",
+    "goat",
+    "honey badger",
+    "langur",
+    "leopard",
+    "macquae",
+    "nilgai",
+    "porcupine",
+    "ring civet",
+    "sambhar",
+    "sloth bear",
+    "wild boar",
+    "wild cat",
+    "none",
+]
+
+_NAMES4 = [
+    "chithal",
     "cows",
     "goat",
-    "chithal",
     "sambhar",
+    "none",
 ]
+
+
 
 # Name of the dataset usually match the script name with CamelCase instead of snake_case
 class CameraTraps(datasets.GeneratorBasedBuilder):
     """Camerat Trap dataset for Telangana AI Forest Challenge."""
 
-    VERSION = datasets.Version("1.1.0")
+    VERSION = datasets.Version("1.2.0")
 
     # This is an example of a dataset with multiple configurations.
     # If you don't want/need to define several sub-sets in your dataset,
@@ -78,10 +106,10 @@ class CameraTraps(datasets.GeneratorBasedBuilder):
     # You will be able to load one or the other configurations in the following list with
     # data = datasets.load_dataset('my_dataset', 'first_domain')
     # data = datasets.load_dataset('my_dataset', 'second_domain')
-#     BUILDER_CONFIGS = [
-#         datasets.BuilderConfig(name="first_domain", version=VERSION, description="This part of my dataset covers a first domain"),
-#         datasets.BuilderConfig(name="second_domain", version=VERSION, description="This part of my dataset covers a second domain"),
-#     ]
+    BUILDER_CONFIGS = [
+        datasets.BuilderConfig(name="tai4species", version=VERSION, description="This part of my dataset covers a first domain with 4 species"),
+        datasets.BuilderConfig(name="tai20species", version=VERSION, description="This part of my dataset covers a second domain with 20 species"),
+    ]
 
     DEFAULT_CONFIG_NAME = "tai4species"  # It's not mandatory to have a default configuration. Just use one if it make sense.
 
@@ -92,10 +120,21 @@ class CameraTraps(datasets.GeneratorBasedBuilder):
                 {
                     "filename": datasets.Value("string"),
                     "image": datasets.Image(),
-                    "label": datasets.features.ClassLabel(names=_NAMES),
+                    "label": datasets.features.ClassLabel(names=_NAMES4),
                     # These are the features of your dataset like images, labels ...
                 }
             )
+        elif self.config.name == "tai20species": 
+            features = datasets.Features(
+                {
+                    "filename": datasets.Value("string"),
+                    "image": datasets.Image(),
+                    "label": datasets.features.ClassLabel(names=_NAMES20),
+                    # These are the features of your dataset like images, labels ...
+                }
+            )
+
+            
         return datasets.DatasetInfo(
             # This is the description that will appear on the datasets page.
             description=_DESCRIPTION,
@@ -131,12 +170,12 @@ class CameraTraps(datasets.GeneratorBasedBuilder):
                 },
             ),
             datasets.SplitGenerator(
-                name=datasets.Split.TEST,
+                name=datasets.Split.VALIDATION,
                 # These kwargs will be passed to _generate_examples
                 gen_kwargs={
                     "data_dir": data_dir,
-                    "filepath": os.path.join(data_dir, "cameratraps/cameratraps_test.csv"),
-                    "split": "test"
+                    "filepath": os.path.join(data_dir, "cameratraps/cameratraps_val.csv"),
+                    "split": "val"
                 },
             ),
         ]
@@ -148,10 +187,11 @@ class CameraTraps(datasets.GeneratorBasedBuilder):
         reader = pd.read_csv(filepath)
         for key, row in reader.iterrows():
             data =dict(row)
-            if self.config.name == "tai4species":
-                # Yields examples as (key, example) tuples
-                    yield key, {
-                        "filename": data["filename"],
-                        "image": Image.open(os.path.join(data_dir, data["filename"])),
-                        "label": data["labels"],
-                    }
+                
+            # Yields examples as (key, example) tuples
+            yield key, {
+                "filename": data["filename"],
+                "image": Image.open(os.path.join(data_dir, data["filename"])),
+                "label": data["labels"],
+                }
+          
