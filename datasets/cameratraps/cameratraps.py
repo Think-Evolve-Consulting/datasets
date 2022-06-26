@@ -52,7 +52,8 @@ _LICENSE = ""
 # This can be an arbitrary nested dict/list of URLs (see below in `_split_generators` method)
 _URLS = {
     "tai4species": "https://storage.googleapis.com/telangana-cameratraps/cameratraps4.zip",
-    "tai20species": "https://storage.googleapis.com/telangana-cameratraps/cameratraps20.zip"
+    "tai20species": "https://storage.googleapis.com/telangana-cameratraps/cameratraps20.zip",
+    "taiALLspecies": "https://storage.googleapis.com/telangana-cameratraps/cameratrapsALL.zip",
 }
 
 _NAMES20 = [
@@ -109,6 +110,7 @@ class CameraTraps(datasets.GeneratorBasedBuilder):
     BUILDER_CONFIGS = [
         datasets.BuilderConfig(name="tai4species", version=VERSION, description="This part of my dataset covers a first domain with 4 species"),
         datasets.BuilderConfig(name="tai20species", version=VERSION, description="This part of my dataset covers a second domain with 20 species"),
+        datasets.BuilderConfig(name="taiALLspecies", version=VERSION, description="This part of my dataset covers a second domain with 20 species + ALL data (no aug)"),
     ]
 
     DEFAULT_CONFIG_NAME = "tai4species"  # It's not mandatory to have a default configuration. Just use one if it make sense.
@@ -124,7 +126,7 @@ class CameraTraps(datasets.GeneratorBasedBuilder):
                     # These are the features of your dataset like images, labels ...
                 }
             )
-        elif self.config.name == "tai20species": 
+        elif self.config.name in ["tai20species", "taiALLspecies"]: 
             features = datasets.Features(
                 {
                     "filename": datasets.Value("string"),
